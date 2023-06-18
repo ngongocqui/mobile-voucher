@@ -9,15 +9,19 @@ import { createVoucher } from "../../../services/voucher";
 const ShakePhone = ({ route }) => {
   const { discount } = route.params;
   const profile = useSelector((state) => state.profile);
-  const state = useReactive({ showResult: false });
+  const state = useReactive({ showResult: false, loading: false });
 
   useAsyncEffect(() => {
     const subscription = RNShake.addListener(async () => {
+      if (state.loading) return;
+      state.loading = true;
+
       const [err] = await to(createVoucher(profile?.token, { discount }));
       if (err) return Alert.alert("Lỗi", "Mất kết nối server!");
 
       Alert.alert("Thông báo", "Bạn đã nhận được voucher Giảm giá ");
       state.showResult = true;
+      state.loading = false;
     });
 
     return () => {
@@ -57,7 +61,14 @@ const ShakePhone = ({ route }) => {
               style={{ width: 200, height: 200, alignSelf: "center" }}
             />
           </View>
-          <Text style={{ fontSize: 20, fontWeight: "bold" }}>
+          <Text
+            style={{
+              fontSize: 20,
+              fontWeight: "bold",
+              width: "100%",
+              textAlign: "center",
+            }}
+          >
             Bạn đã nhận được voucher
           </Text>
         </View>
